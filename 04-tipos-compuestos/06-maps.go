@@ -2,7 +2,7 @@ package main
 
 import "fmt"
 
-func maps() {
+func mapsBasic() {
 
 	// var nilMap map[string]int
 
