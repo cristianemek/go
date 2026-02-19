@@ -41,4 +41,37 @@ func RunDemo() {
 	PrintKV("Subtotal", sub)
 	PrintKV("Total Quantity", qty)
 
+	PrintDivider()
+
+	TryChangeCustomerByValue(order, "Cristian")
+
+	PrintKV("Customer after TryChangeCustomerByValue", order.Customer)
+
+	TryChangeCustomerByPointer(&order, "Cristian Updated")
+
+	PrintKV("Customer after TryChangeCustomerByPointer", order.Customer)
+
+	setCity(order, "Guadalajara")
+	PrintKV("City", order.Meta["city"])
+
+	PrintDivider()
+
+	items := []Item{
+		{SKU: "as-123", Name: "Teclado Membrana", Price: 3500, Qty: 1},
+		{SKU: "Dd-133", Name: "Monitor Gaming", Price: 13500, Qty: 2},
+	}
+
+	AddItems(&order, items...)
+	PrintKV("Cantidad Total: ", CalcTotalQuantity(order))
+	PrintKV("Items: ", order.Items)
+
+	PrintDivider()
+
+	findItem, extraValueFind := FindItem(order, "Dd-133")
+
+	Print2("Item encontrado", findItem, extraValueFind)
+
+	getMeta, extraGetMeta := GetMeta(order, "city")
+
+	Print2("Metadato encontrado", getMeta, extraGetMeta)
 }

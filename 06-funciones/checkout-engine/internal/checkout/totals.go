@@ -44,3 +44,34 @@ func CalcTotalQuantity(order Order) int {
 	}
 	return sum
 }
+
+func AddItems(order *Order, items ...Item) {
+	order.Items = append(order.Items, items...)
+}
+
+func FindItem(order Order, sku string) (Item, bool) {
+	for _, item := range order.Items {
+		if item.SKU == sku {
+			return item, true
+		}
+	}
+
+	return Item{}, false
+}
+
+func GetMeta(order Order, key string) (string, bool) {
+	if order.Meta == nil {
+		return "", false
+	}
+	value, exists := order.Meta[key]
+	return value, exists
+}
+
+func IndexOfItem(order Order, sku string) (int, bool) {
+	for index, item := range order.Items {
+		if item.SKU == sku {
+			return index, true
+		}
+	}
+	return -1, false
+}
