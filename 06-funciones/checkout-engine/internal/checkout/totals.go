@@ -75,3 +75,15 @@ func IndexOfItem(order Order, sku string) (int, bool) {
 	}
 	return -1, false
 }
+
+func Compute(order Order) (t Totals, err error) {
+	if err = ValidateOrder(order); err != nil {
+		return Totals{}, err
+	}
+
+	t.Subtotal = CalcSubTotal(order)
+	t.Total = t.Subtotal - t.Discount + t.Tax + t.Shipping
+
+	//se podria dejar el return vacio y go ya detecta que tipo de retorno tiene que dar, pero cuanto mas explícitos mejor
+	return t, nil
+}

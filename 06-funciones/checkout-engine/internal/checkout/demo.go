@@ -20,9 +20,12 @@ func RunDemo() {
 	AddItem(&order, Item{
 		SKU:   "ABD-123",
 		Name:  "Monitor",
-		Price: 1500,
+		Price: 3000,
 		Qty:   2,
 	})
+
+	//Validador
+	PrintKV("Validador", ValidateOrder(order))
 
 	PrintKV("Order ID", order.ID)
 	PrintKV("Customer", order.Customer)
@@ -74,4 +77,17 @@ func RunDemo() {
 	getMeta, extraGetMeta := GetMeta(order, "city")
 
 	Print2("Metadato encontrado", getMeta, extraGetMeta)
+	IndexOfItemValue, INdexOfItemExtra := IndexOfItem(order, "as-123")
+	Print2("Index encontrado", IndexOfItemValue, INdexOfItemExtra)
+
+	PrintDivider()
+
+	couponValue, couponError := ParseCoupon("SAVE10")
+
+	Print2("Probando cupon: ", couponValue, couponError)
+
+	PrintDivider()
+
+	computeValue, computeError := Compute(order)
+	Print2("Computar valores por nombre (TOTALES): ", computeValue, computeError)
 }

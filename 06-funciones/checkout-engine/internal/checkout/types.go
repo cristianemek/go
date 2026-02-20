@@ -15,3 +15,11 @@ type Order struct {
 	Items    []Item
 	Meta     map[string]string
 }
+
+type Totals struct {
+	Subtotal Money
+	Discount Money
+	Tax      Money
+	Shipping Money
+	Total    Money
+}
