@@ -115,8 +115,8 @@ func RunDemo() {
 
 	PrintDivider()
 
-	discoutnKeyboard := MajeSKUDiscount("as-123", 500)
-	discountHDMI := MajeSKUDiscount("Dd-133", 1000)
+	discoutnKeyboard := MakeSKUDiscount("as-123", 500)
+	discountHDMI := MakeSKUDiscount("Dd-133", 1000)
 
 	PrintKV("Descuento por teclado: ", discoutnKeyboard(order))
 	PrintKV("Descuento por monitor: ", discountHDMI(order))
@@ -126,6 +126,18 @@ func RunDemo() {
 
 	taxFn := NewTaxByState(state)
 	shipFn := NewShippingByZone(zone)
+
+	promo := CompositeDiscount{
+		Name: "Promocion Febrero",
+		Fns: []DiscountFn{
+			FlatDiscount(100),
+			ThresholdPercentDiscount(2000, 10),
+			MakeSKUDiscount("as-123", 100),
+		},
+	}
+
+	disc := promo.Apply(order)
+	PrintKV("DESCUENTO RECURSIVO", disc)
 
 	computeValue, computeError := order.Compute(taxFn, shipFn, FlatDiscount(5000), ThresholdPercentDiscount(2000, 10))
 	Print2("Computar valores por nombre (TOTALES): ", computeValue, computeError)

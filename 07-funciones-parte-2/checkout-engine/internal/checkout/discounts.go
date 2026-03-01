@@ -10,6 +10,11 @@ type Coupon struct {
 	Val  int
 }
 
+type CompositeDiscount struct {
+	Name string
+	Fns  []DiscountFn
+}
+
 func ApplyCouponCodes(order *Order, codes ...string) {
 	if order.Meta == nil {
 		order.Meta = map[string]string{}
@@ -51,7 +56,7 @@ func ThresholdPercentDiscount(min Money, percent int) DiscountFn {
 // Closure: función que regresa otra función, y esa función tiene acceso a las variables de la función padre
 // lo potente de devolver una funcion es que no realizo ningun calculo aqui solo creo la funcion configurada,
 // cuando se llame en el codigo es cuando se calcula
-func MajeSKUDiscount(sku string, amount Money) DiscountFn {
+func MakeSKUDiscount(sku string, amount Money) DiscountFn {
 	return func(o Order) Money {
 		_, ok := o.FindItem(sku)
 		if !ok {
@@ -59,4 +64,16 @@ func MajeSKUDiscount(sku string, amount Money) DiscountFn {
 		}
 		return amount
 	}
+}
+
+func ApplyDiscountsRecursive(order Order, fns []DiscountFn) Money {
+	if len(fns) == 0 {
+		return 0
+	}
+
+	return fns[0](order) + ApplyDiscountsRecursive(order, fns[1:])
+}
+
+func (composite CompositeDiscount) Apply(order Order) Money {
+	return ApplyDiscountsRecursive(order, composite.Fns)
 }

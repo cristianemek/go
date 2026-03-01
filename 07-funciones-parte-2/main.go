@@ -3,12 +3,13 @@ package main
 import "fmt"
 
 func main() {
-	PrintOK("bien")
-	ok := PrintOK("otro mensaje")
-	fmt.Println(ok) //imprime el msg del return de la func
+	// PrintOK("bien")
+	// ok := PrintOK("otro mensaje")
+	// fmt.Println(ok) //imprime el msg del return de la func
 
-	demoDeferLIFO()
-
+	// demoDeferLIFO()
+	fmt.Println(factorial(5))
+	fmt.Println(sum([]int{1, 2, 3, 4}))
 }
 
 func PrintOK(msg string) string {
@@ -26,4 +27,26 @@ func demoDeferLIFO() {
 	defer PrintOK("primero")
 	defer PrintOK("segundo")
 	PrintOK("tercero")
+}
+
+func factorial(number int) int {
+	if number < 0 {
+		panic("Numero debe ser mayor o igual a cero (0)")
+	}
+
+	if number == 0 {
+		return 1
+	}
+
+	return number * factorial(number-1)
+}
+
+func sum(nums []int) int {
+	//caso base:
+
+	if len(nums) == 0 {
+		return 0
+	}
+
+	return nums[0] + sum(nums[1:])
 }
