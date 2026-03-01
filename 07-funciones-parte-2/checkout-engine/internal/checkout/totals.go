@@ -9,16 +9,18 @@ func NewOrder(id, customer string) Order {
 	}
 }
 
-// el *
-func AddItem(order *Order, item Item) {
-	order.Items = append(order.Items, item)
+// metodo para agregar item a la orden, convertir funcion en metodo (metodo es una funcion pero relacionada a un tipo de dato,en este caso Order),
+// el receiver es el objeto al que se le asigna el metodo, en este caso order, se puede usar cualquier nombre pero por convención se usa la primera letra del tipo de dato
+// se puede usar puntero para modificar el objeto original, si no se usa puntero se hace una copia del objeto y se modifica esa copia pero no el original
+func (o *Order) AddItem(item Item) {
+	o.Items = append(o.Items, item)
 }
 
-func RemoveItem(order *Order, sku string) bool {
-	for i := range order.Items {
-		if order.Items[i].SKU == sku {
+func (o *Order) RemoveItem(sku string) bool {
+	for i := range o.Items {
+		if o.Items[i].SKU == sku {
 			//traer todos los elementos hasta la posicion i, separamos el slice en 2 partes, excluimos la posicion que se manda (i+1) y los ... para iterar 1 a 1 en el slice
-			order.Items = append(order.Items[:i], order.Items[i+1:]...)
+			o.Items = append(o.Items[:i], o.Items[i+1:]...)
 			return true
 		}
 	}
@@ -29,28 +31,28 @@ func CalcLineTotal(item Item) Money {
 	return item.Price * Money(item.Qty)
 }
 
-func CalcSubTotal(order Order) Money {
+func (o Order) CalcSubTotal() Money {
 	var sum Money
-	for _, item := range order.Items {
+	for _, item := range o.Items {
 		sum += CalcLineTotal(item)
 	}
 	return sum
 }
 
-func CalcTotalQuantity(order Order) int {
+func (o Order) CalcTotalQuantity() int {
 	var sum int
-	for _, item := range order.Items {
+	for _, item := range o.Items {
 		sum += item.Qty
 	}
 	return sum
 }
 
-func AddItems(order *Order, items ...Item) {
-	order.Items = append(order.Items, items...)
+func (o *Order) AddItems(items ...Item) {
+	o.Items = append(o.Items, items...)
 }
 
-func FindItem(order Order, sku string) (Item, bool) {
-	for _, item := range order.Items {
+func (o Order) FindItem(sku string) (Item, bool) {
+	for _, item := range o.Items {
 		if item.SKU == sku {
 			return item, true
 		}
@@ -59,16 +61,16 @@ func FindItem(order Order, sku string) (Item, bool) {
 	return Item{}, false
 }
 
-func GetMeta(order Order, key string) (string, bool) {
-	if order.Meta == nil {
+func (o Order) GetMeta(key string) (string, bool) {
+	if o.Meta == nil {
 		return "", false
 	}
-	value, exists := order.Meta[key]
+	value, exists := o.Meta[key]
 	return value, exists
 }
 
-func IndexOfItem(order Order, sku string) (int, bool) {
-	for index, item := range order.Items {
+func (o Order) IndexOfItem(sku string) (int, bool) {
+	for index, item := range o.Items {
 		if item.SKU == sku {
 			return index, true
 		}
@@ -76,15 +78,31 @@ func IndexOfItem(order Order, sku string) (int, bool) {
 	return -1, false
 }
 
-func Compute(order Order) (t Totals, err error) {
+func (o Order) ApplyDiscounts(fns ...DiscountFn) Money {
+	var discount Money
+	for _, fn := range fns {
+		discount += fn(o)
+	}
+	sub := o.CalcSubTotal()
+	if discount > sub {
+		return sub
+	}
+
+	return discount
+}
+
+func (o Order) Compute(tax TaxFn, ship ShippingFn, discount ...DiscountFn) (t Totals, err error) {
 	//defer, se ejecuta al acabar la funcion Compute
 	defer Track("Compute")() //la funcion track devuelve otra func,si no agrego () no se ejecuta la funcion que devuelve
 
-	if err = ValidateOrder(order); err != nil {
+	if err = ValidateOrder(o); err != nil {
 		return Totals{}, err
 	}
 
-	t.Subtotal = CalcSubTotal(order)
+	t.Subtotal = o.CalcSubTotal()
+	t.Discount = o.ApplyDiscounts(discount...)
+	t.Tax = tax(o)
+	t.Shipping = ship(o)
 	t.Total = t.Subtotal - t.Discount + t.Tax + t.Shipping
 
 	//se podria dejar el return vacio y go ya detecta que tipo de retorno tiene que dar, pero cuanto mas explícitos mejor

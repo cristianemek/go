@@ -40,10 +40,23 @@ func FlatDiscount(amount Money) DiscountFn {
 
 func ThresholdPercentDiscount(min Money, percent int) DiscountFn {
 	return func(order Order) Money {
-		sub := CalcSubTotal(order)
+		sub := order.CalcSubTotal()
 		if sub < min {
 			return 0
 		}
 		return sub * Money(percent) / 100
+	}
+}
+
+// Closure: función que regresa otra función, y esa función tiene acceso a las variables de la función padre
+// lo potente de devolver una funcion es que no realizo ningun calculo aqui solo creo la funcion configurada,
+// cuando se llame en el codigo es cuando se calcula
+func MajeSKUDiscount(sku string, amount Money) DiscountFn {
+	return func(o Order) Money {
+		_, ok := o.FindItem(sku)
+		if !ok {
+			return 0
+		}
+		return amount
 	}
 }

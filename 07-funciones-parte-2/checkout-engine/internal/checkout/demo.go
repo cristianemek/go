@@ -3,21 +3,21 @@ package checkout
 func RunDemo() {
 	PrintHeader("Hola Checkout Engine :)")
 	order := NewOrder("123456789", "Cristian")
-	AddItem(&order, Item{
+	order.AddItem(Item{
 		SKU:   "ABC-123",
 		Name:  "Teclado Mecánico",
 		Price: 3500,
 		Qty:   1,
 	})
 
-	AddItem(&order, Item{
+	order.AddItem(Item{
 		SKU:   "ABD-133",
 		Name:  "Monitor",
 		Price: 13500,
 		Qty:   2,
 	})
 
-	AddItem(&order, Item{
+	order.AddItem(Item{
 		SKU:   "ABD-123",
 		Name:  "Monitor",
 		Price: 3000,
@@ -31,15 +31,15 @@ func RunDemo() {
 	PrintKV("Customer", order.Customer)
 	PrintKV("Items", len(order.Items))
 
-	remove := RemoveItem(&order, "ABC-123")
+	remove := order.RemoveItem("ABC-123")
 
 	PrintKV("Item ABC-123 eliminado: ", remove)
 	PrintKV("Items", len(order.Items))
 
 	PrintDivider()
 
-	sub := CalcSubTotal(order)
-	qty := CalcTotalQuantity(order)
+	sub := order.CalcSubTotal()
+	qty := order.CalcTotalQuantity()
 
 	PrintKV("Subtotal", sub)
 	PrintKV("Total Quantity", qty)
@@ -54,8 +54,11 @@ func RunDemo() {
 
 	PrintKV("Customer after TryChangeCustomerByPointer", order.Customer)
 
-	setCity(order, "Guadalajara")
+	setCity(&order, "Guadalajara")
 	PrintKV("City", order.Meta["city"])
+
+	//setear zona
+	setZone(&order, "NATIONAL")
 
 	PrintDivider()
 
@@ -64,20 +67,20 @@ func RunDemo() {
 		{SKU: "Dd-133", Name: "Monitor Gaming", Price: 13500, Qty: 2},
 	}
 
-	AddItems(&order, items...)
-	PrintKV("Cantidad Total: ", CalcTotalQuantity(order))
+	order.AddItems(items...)
+	PrintKV("Cantidad Total: ", order.CalcTotalQuantity())
 	PrintKV("Items: ", order.Items)
 
 	PrintDivider()
 
-	findItem, extraValueFind := FindItem(order, "Dd-133")
+	findItem, extraValueFind := order.FindItem("Dd-133")
 
 	Print2("Item encontrado", findItem, extraValueFind)
 
-	getMeta, extraGetMeta := GetMeta(order, "city")
+	getMeta, extraGetMeta := order.GetMeta("city")
 
 	Print2("Metadato encontrado", getMeta, extraGetMeta)
-	IndexOfItemValue, INdexOfItemExtra := IndexOfItem(order, "as-123")
+	IndexOfItemValue, INdexOfItemExtra := order.IndexOfItem("as-123")
 	Print2("Index encontrado", IndexOfItemValue, INdexOfItemExtra)
 
 	PrintDivider()
@@ -88,8 +91,8 @@ func RunDemo() {
 
 	PrintDivider()
 
-	computeValue, computeError := Compute(order)
-	Print2("Computar valores por nombre (TOTALES): ", computeValue, computeError)
+	// computeValue, computeError := Compute(order)
+	// Print2("Computar valores por nombre (TOTALES): ", computeValue, computeError)
 
 	PrintDivider()
 
@@ -101,7 +104,7 @@ func RunDemo() {
 
 	//funcion anonima, la declaro y se la asigno a una varibale, y puedo llamarla a continuacion, util para casos puntuales y logica rapida
 	cityDiscount := func(order Order) Money {
-		city, _ := GetMeta(order, "city")
+		city, _ := order.GetMeta("city")
 		if city == "Tijuana" {
 			return 200
 		}
@@ -109,4 +112,22 @@ func RunDemo() {
 	}
 
 	PrintKV("Descuento especial por ciudad: ", cityDiscount(order))
+
+	PrintDivider()
+
+	discoutnKeyboard := MajeSKUDiscount("as-123", 500)
+	discountHDMI := MajeSKUDiscount("Dd-133", 1000)
+
+	PrintKV("Descuento por teclado: ", discoutnKeyboard(order))
+	PrintKV("Descuento por monitor: ", discountHDMI(order))
+
+	state, _ := order.GetMeta("city")
+	zone, _ := order.GetMeta("zone")
+
+	taxFn := NewTaxByState(state)
+	shipFn := NewShippingByZone(zone)
+
+	computeValue, computeError := order.Compute(taxFn, shipFn, FlatDiscount(5000), ThresholdPercentDiscount(2000, 10))
+	Print2("Computar valores por nombre (TOTALES): ", computeValue, computeError)
+
 }
