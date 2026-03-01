@@ -77,6 +77,9 @@ func IndexOfItem(order Order, sku string) (int, bool) {
 }
 
 func Compute(order Order) (t Totals, err error) {
+	//defer, se ejecuta al acabar la funcion Compute
+	defer Track("Compute")() //la funcion track devuelve otra func,si no agrego () no se ejecuta la funcion que devuelve
+
 	if err = ValidateOrder(order); err != nil {
 		return Totals{}, err
 	}

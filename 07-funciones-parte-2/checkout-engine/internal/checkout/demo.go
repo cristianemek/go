@@ -90,4 +90,23 @@ func RunDemo() {
 
 	computeValue, computeError := Compute(order)
 	Print2("Computar valores por nombre (TOTALES): ", computeValue, computeError)
+
+	PrintDivider()
+
+	PrintKV("Descuento", FlatDiscount(200)(order))
+	th := ThresholdPercentDiscount(2000, 10)
+	PrintKV("Descuento %: ", th(order))
+
+	PrintDivider()
+
+	//funcion anonima, la declaro y se la asigno a una varibale, y puedo llamarla a continuacion, util para casos puntuales y logica rapida
+	cityDiscount := func(order Order) Money {
+		city, _ := GetMeta(order, "city")
+		if city == "Tijuana" {
+			return 200
+		}
+		return 0
+	}
+
+	PrintKV("Descuento especial por ciudad: ", cityDiscount(order))
 }

@@ -1,6 +1,9 @@
 package checkout
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 func PrintHeader(title string) {
 	fmt.Printf("\n=== %s ===\n", title)
@@ -17,4 +20,11 @@ func PrintKV(key string, value any) {
 
 func Print2(key string, value any, extra any) {
 	fmt.Printf("%-12s: %v\n %v\n", key, value, extra)
+}
+
+func Track(name string) func() {
+	start := time.Now()
+	return func() {
+		PrintKV("Time: "+name, time.Since(start))
+	}
 }
