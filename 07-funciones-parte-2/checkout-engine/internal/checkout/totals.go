@@ -91,7 +91,7 @@ func (o Order) ApplyDiscounts(fns ...DiscountFn) Money {
 	return discount
 }
 
-func (o Order) Compute(tax TaxFn, ship ShippingFn, discount ...DiscountFn) (t Totals, err error) {
+func (o Order) Compute(tax TaxFn, bundle Money, ship ShippingFn, discount ...DiscountFn) (t Totals, err error) {
 	//defer, se ejecuta al acabar la funcion Compute
 	defer Track("Compute")() //la funcion track devuelve otra func,si no agrego () no se ejecuta la funcion que devuelve
 
@@ -100,7 +100,14 @@ func (o Order) Compute(tax TaxFn, ship ShippingFn, discount ...DiscountFn) (t To
 	}
 
 	t.Subtotal = o.CalcSubTotal()
-	t.Discount = o.ApplyDiscounts(discount...)
+
+	if bundle > 0 {
+		t.Discount = bundle
+	} else {
+		t.Discount = o.ApplyDiscounts(discount...)
+
+	}
+
 	t.Tax = tax(o)
 	t.Shipping = ship(o)
 	t.Total = t.Subtotal - t.Discount + t.Tax + t.Shipping

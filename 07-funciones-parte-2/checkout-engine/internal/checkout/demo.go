@@ -41,8 +41,8 @@ func RunDemo() {
 	sub := order.CalcSubTotal()
 	qty := order.CalcTotalQuantity()
 
-	PrintKV("Subtotal", sub)
-	PrintKV("Total Quantity", qty)
+	PrintKV("Subtotal", StringUSD(sub))
+	PrintKV("Total Quantity", StringUSD(qty))
 
 	PrintDivider()
 
@@ -96,9 +96,9 @@ func RunDemo() {
 
 	PrintDivider()
 
-	PrintKV("Descuento", FlatDiscount(200)(order))
+	PrintKV("Descuento", StringUSD(FlatDiscount(200)(order)))
 	th := ThresholdPercentDiscount(2000, 10)
-	PrintKV("Descuento %: ", th(order))
+	PrintKV("Descuento %: ", StringUSD(th(order)))
 
 	PrintDivider()
 
@@ -118,8 +118,8 @@ func RunDemo() {
 	discoutnKeyboard := MakeSKUDiscount("as-123", 500)
 	discountHDMI := MakeSKUDiscount("Dd-133", 1000)
 
-	PrintKV("Descuento por teclado: ", discoutnKeyboard(order))
-	PrintKV("Descuento por monitor: ", discountHDMI(order))
+	PrintKV("Descuento por teclado: ", StringUSD(discoutnKeyboard(order)))
+	PrintKV("Descuento por monitor: ", StringUSD(discountHDMI(order)))
 
 	state, _ := order.GetMeta("city")
 	zone, _ := order.GetMeta("zone")
@@ -136,10 +136,12 @@ func RunDemo() {
 		},
 	}
 
-	disc := promo.Apply(order)
-	PrintKV("DESCUENTO RECURSIVO", disc)
+	bundle := promo.Apply(order)
+	PrintKV("DESCUENTO RECURSIVO", StringUSD(bundle))
 
-	computeValue, computeError := order.Compute(taxFn, shipFn, FlatDiscount(5000), ThresholdPercentDiscount(2000, 10))
+	computeValue, computeError := order.Compute(taxFn, bundle, shipFn, FlatDiscount(5000), ThresholdPercentDiscount(2000, 10))
 	Print2("Computar valores por nombre (TOTALES): ", computeValue, computeError)
+
+	PrintKV("TOTAL: ", StringUSD(computeValue.Total))
 
 }
